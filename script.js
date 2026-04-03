@@ -10,7 +10,7 @@ let currentMode = null;
 let lastFinger = -1;
 let time = 0;
 
-// TEXT MAP FINAL
+// TEXT
 const textMap = {
   1: "I LOVE YOU",
   2: "BINTANG SRI MAKAILA"
@@ -48,8 +48,6 @@ function init3D() {
 
 // TEXT SHAPE
 function createTextShape(text) {
-  if (!text) return;
-
   let canvas = document.createElement("canvas");
   let ctx = canvas.getContext("2d");
 
@@ -60,7 +58,7 @@ function createTextShape(text) {
   ctx.fillRect(0, 0, 512, 256);
 
   ctx.fillStyle = "white";
-  ctx.font = "bold 60px Arial"; // kecil biar muat panjang
+  ctx.font = "bold 60px Arial";
   ctx.textAlign = "center";
   ctx.fillText(text, 256, 130);
 
@@ -82,7 +80,7 @@ function createTextShape(text) {
   }
 }
 
-// ❤️ HEART SHAPE
+// ❤️ HEART
 function createHeartShape() {
   let i = 0;
 
@@ -90,7 +88,7 @@ function createHeartShape() {
     if (i >= count) break;
 
     let x = 16 * Math.pow(Math.sin(t), 3);
-    let y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+    let y = 13 * Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t);
 
     let i3 = i * 3;
     target[i3] = x / 10;
@@ -103,15 +101,13 @@ function createHeartShape() {
 
 // DETEKSI JARI
 function countFingers(lm) {
-  let fingers = 0;
-
-  if (lm[8].y < lm[6].y) fingers++;
-  if (lm[12].y < lm[10].y) fingers++;
-  if (lm[16].y < lm[14].y) fingers++;
-  if (lm[20].y < lm[18].y) fingers++;
-  if (lm[4].x > lm[3].x) fingers++;
-
-  return fingers;
+  let f = 0;
+  if (lm[8].y < lm[6].y) f++;
+  if (lm[12].y < lm[10].y) f++;
+  if (lm[16].y < lm[14].y) f++;
+  if (lm[20].y < lm[18].y) f++;
+  if (lm[4].x > lm[3].x) f++;
+  return f;
 }
 
 // HAND TRACK
@@ -164,19 +160,7 @@ function initHand(video) {
   cam.start();
 }
 
-// MOUSE / TOUCH
-window.addEventListener("mousemove", e => {
-  handX = (e.clientX / innerWidth - 0.5) * 6;
-  handY = -(e.clientY / innerHeight - 0.5) * 6;
-});
-
-window.addEventListener("touchmove", e => {
-  let t = e.touches[0];
-  handX = (t.clientX / innerWidth - 0.5) * 6;
-  handY = -(t.clientY / innerHeight - 0.5) * 6;
-});
-
-// ANIMATION
+// ANIMATE
 function animate() {
   requestAnimationFrame(animate);
   time += 0.05;
@@ -214,7 +198,7 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-// START CAMERA
+// START CAMERA (FIX UTAMA)
 document.getElementById("startBtn").onclick = async () => {
   const video = document.getElementById("video");
 
@@ -225,23 +209,22 @@ document.getElementById("startBtn").onclick = async () => {
     });
 
     video.srcObject = stream;
+    video.setAttribute("playsinline", true);
+    video.muted = true;
+
     await video.play();
 
-    init3D();
-    initHand(video);
-    animate();
+    video.onloadeddata = () => {
+      console.log("VIDEO READY");
 
-    document.getElementById("startBtn").style.display = "none";
+      init3D();
+      initHand(video);
+      animate();
+
+      document.getElementById("startBtn").style.display = "none";
+    };
 
   } catch (err) {
     alert("Kamera gagal: " + err.message);
   }
 };
-
-// RESIZE
-window.addEventListener("resize", () => {
-  if (!camera) return;
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
